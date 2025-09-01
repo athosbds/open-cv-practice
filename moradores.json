@@ -1,0 +1,11 @@
+{
+    "moradores": [
+        {
+            "id": 1,
+            "nome": "Athos",
+            "autorizado": true,
+            "rosto": "rosto/athos.png"
+
+        }
+    ]
+}
