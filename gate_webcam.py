@@ -13,7 +13,7 @@ for resident in residents:
         print(f"Imagem do morador {resident['nome']} não encontrada: {resident['rosto']}")
 
 
-cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
+cap = cv2.VideoCapture(2, cv2.CAP_DSHOW)
 print("Pressione 'q' para sair.")
 
 while True:
