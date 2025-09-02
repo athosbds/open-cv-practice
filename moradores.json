@@ -1,10 +1,14 @@
 {
-    "moradores": [
-        {
-            "nome": "Athos",
-            "rosto": "rosto/athos.png",
-            "autorizado": true
-
-        }
-    ]
+  "moradores": [
+    {
+      "nome": "Athos",
+      "rosto": "athos.jpg",
+      "autorizado": true
+    },
+    {
+      "nome": "Maria",
+      "rosto": "maria.jpg",
+      "autorizado": true
+    }
+  ]
 }
