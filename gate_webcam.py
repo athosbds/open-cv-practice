@@ -1,59 +1,63 @@
 import cv2
-import os
 import json
-import numpy as np
-from deepface import DeepFace
+import os
+import face_recognition
+
 
 RESIDENTS_JSON = "moradores.json"
 
 with open(RESIDENTS_JSON, "r", encoding="utf-8") as f:
     data = json.load(f)
     residents = data["moradores"] if "moradores" in data else data
+known_face = []
+known_face_name = []
+authorized_status = []
 
-# Pré-calcula embeddings
-for r in residents:
-    if os.path.isfile(r["rosto"]) and r.get("autorizado", False):
-        r["embedding"] = np.array(DeepFace.represent(r["rosto"], enforce_detection=False, detector_backend="opencv")[0]["embedding"])
-    else:
-        r["embedding"] = None
+for resident in residents:
+    if "nome" in resident["rosto"] in resident:
+        archive = resident["rosto"]
+        if os.path.exists(archive):
+            image = face_recognition.load_image_file(archive)
+            encodings = face_recognition.face_encodings(image)
+            if encodings:
+                known_face.append(encodings[0])
+                known_face_name.append(resident["nome"])
+            else:
+                print(f"[AVISO] - Nenhum Rosto Detectado: {archive}")
+        else:
+            print(f'[ERRO] Arquivo não encontrado: {archive}')
+
 
 cap = cv2.VideoCapture(0)
-face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
 
 while True:
     ret, frame = cap.read()
     if not ret:
         break
+    # frames
+    small = cv2.resize(frame (320, 240))
+    rgb_small = cv2.cvtColor(small, cv2.COLOR_BGR2RGB)
 
-    frame_small = cv2.resize(frame, (320, 240))
-    gray = cv2.cvtColor(frame_small, cv2.COLOR_BGR2GRAY)
-    faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5)
+    face_location = face_recognition.face_locations(rgb_small)
+    face_encodings = face_recognition.face_locations(rgb_small, face_location)
+    for face_encoding, face_location in zip(face_encodings, face_location):
 
-    access_granted = False
+        matches = face_recognition.compare_faces(known_face, face_encoding, tolerance=0.5)
+        name = "Desconhecido"
 
-    if len(faces) > 0:
-        for (x, y, w, h) in faces:
-            face_roi = cv2.resize(frame_small[y:y+h, x:x+w], (160, 160))
-            try:
-                frame_embedding = np.array(DeepFace.represent(face_roi, enforce_detection=False, detector_backend="opencv")[0]["embedding"])
-                for r in residents:
-                    if r["embedding"] is None:
-                        continue
-                    distance = np.linalg.norm(frame_embedding - r["embedding"])
-                    if distance < 0.6:
-                        cv2.putText(frame_small, f"Acesso liberado: {r['nome']}", (10,30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,255,0),2)
-                        print(f"✅ Acesso liberado para {r['nome']}")
-                        access_granted = True
-                        break
-                if access_granted:
-                    break
-            except:
-                continue
+        if True in matches:
+            first_match_index = matches.index(True)
+            name = known_face_name[first_match_index]
+            print(f"✅ Portão aberto para: {name}")
 
-    if not access_granted:
-        cv2.putText(frame_small, "Nao Autorizado", (10,30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,0,255),2)
+        top, right, bottom, left = [v * 4 for v in face_location]  l
+        color = (0, 255, 0) if name != "Desconhecido" else (0, 0, 255)
+        cv2.rectangle(frame, (left, top), (right, bottom), color, 2)
+        cv2.putText(frame, name, (left, top - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, color, 2)
 
-    cv2.imshow("Camera", frame_small)
+    cv2.imshow("Reconhecimento Facial", frame)
+
+    # Sair no 'q'
     if cv2.waitKey(1) & 0xFF == ord("q"):
         break
 
