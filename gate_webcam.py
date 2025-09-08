@@ -45,8 +45,6 @@ while True:
     if not ret:
         break
     frame_count += 1
-
-
     if frame_count % 15 != 0:
         cv2.imshow("Reconhecimento Facial", frame)
         if cv2.waitKey(1) & 0xFF == ord("q"):
