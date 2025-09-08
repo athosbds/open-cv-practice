@@ -8,7 +8,7 @@
     {
       "nome": "Maria",
       "rosto": "maria.jpg",
-      "autorizado": true
+      "autorizado": false
     }
   ]
 }
