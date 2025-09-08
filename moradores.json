@@ -2,13 +2,12 @@
   "moradores": [
     {
       "nome": "Athos",
-      "rosto": "athos.jpg",
+      "rostos": [
+      "C:/Users/Barbosa/Documents/open-cv-practice/rostos/athos.jpeg", 
+      "C:/Users/Barbosa/Documents/open-cv-practice/rostos/athos_2.jpeg", 
+      "C:/Users/Barbosa/Documents/open-cv-practice/rostos/athos_3.jpeg", 
+      "C:/Users/Barbosa/Documents/open-cv-practice/rostos/athos_4.jpeg"],
       "autorizado": true
-    },
-    {
-      "nome": "Maria",
-      "rosto": "maria.jpg",
-      "autorizado": false
     }
   ]
 }

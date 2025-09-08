@@ -16,9 +16,14 @@ known_face_names = []
 authorized_status = []
 
 for resident in residents:
-    if "nome" in resident and "rosto" in resident:
-        archive = resident["rosto"]
-        if os.path.exists(archive):
+    if "nome" in resident:
+        face_files = resident.get("rostos", [])
+        if isinstance(face_files, str):
+            face_files = [face_files]
+        for archive in face_files:
+            if not os.path.exists(archive):
+                print(f'Arquivo Não Encontrado.')
+                continue
             image = face_recognition.load_image_file(archive)
             encodings = face_recognition.face_encodings(image)
             if encodings:
@@ -27,8 +32,6 @@ for resident in residents:
                 authorized_status.append(resident.get("autorizado", False))
             else:
                 print(f"[AVISO] Nenhum rosto detectado: {archive}")
-        else:
-            print(f"[ERRO] Arquivo não encontrado: {archive}")
 
 
 cap = cv2.VideoCapture(0)
@@ -50,7 +53,7 @@ while True:
         continue
 
  
-    small_frame = cv2.resize(frame, (0, 0), fx=0.25, fy=0.25)
+    small_frame = cv2.resize(frame, (0, 0), fx=0.5, fy=0.5)
     rgb_small_frame = cv2.cvtColor(small_frame, cv2.COLOR_BGR2RGB)
 
 
@@ -59,16 +62,17 @@ while True:
 
     for face_encoding, face_location in zip(face_encodings, face_locations):
         matches = face_recognition.compare_faces(
-            known_face_encodings, face_encoding, tolerance=0.4
+            known_face_encodings, face_encoding, tolerance=0.6
         )
         name = "Desconhecido"
         authorized = False
 
-        if True in matches:
-            idx = matches.index(True)
-            name = known_face_names[idx]
-            authorized = authorized_status[idx]
-
+        import numpy as np
+        face_distances = face_recognition.face_distance(known_face_encodings, face_encoding)
+        best_match_index = np.argmin(face_distances)
+        if face_distances[best_match_index] < 0.6:
+            name = known_face_names[best_match_index]
+            authorized = authorized_status[best_match_index]
             if authorized:
                 print(f"✅ Portão aberto para: {name}")
             else:
@@ -76,7 +80,7 @@ while True:
         else:
             print("⚠️ Rosto desconhecido detectado")
 
-        top, right, bottom, left = [v * 4 for v in face_location]
+        top, right, bottom, left = [v * 2 for v in face_location]
         color = (0, 255, 0) if authorized else (0, 0, 255)
         cv2.rectangle(frame, (left, top), (right, bottom), color, 2)
         cv2.putText(frame, name, (left, top - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.7, color, 2)
